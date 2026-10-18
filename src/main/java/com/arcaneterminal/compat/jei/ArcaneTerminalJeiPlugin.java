@@ -10,6 +10,7 @@ import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
 import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Shows the terminal as a station for arcane and crafting recipes, and makes JEI's "+" button fill
@@ -20,7 +21,7 @@ public final class ArcaneTerminalJeiPlugin implements IModPlugin {
     private static final Identifier PLUGIN_UID = ArcaneTerminal.id("jei_plugin");
 
     @Override
-    public Identifier getPluginUid() {
+    public @NonNull Identifier getPluginUid() {
         return PLUGIN_UID;
     }
 

@@ -1,0 +1,16 @@
+{
+  "block.arcane_terminal.arcane_crafting_terminal": "奥术合成终端",
+  "menu.arcane_terminal.arcane_crafting_terminal": "奥术合成终端",
+  "tooltip.arcane_terminal.arcane_crafting_terminal": "你可以在其中存取你的物品。\\将其放置在一个容器上。自带内置奥术工作台。存储连接器上的奥术工作台充能器会从附近区块中汲取灵气。",
+  "tooltip.arcane_terminal.clear_grid": "将合成方格中的内容放回存储网络",
+  "tooltip.arcane_terminal.mode_arcane": "布局：奥术工作台\n点击切换到制作终端布局",
+  "tooltip.arcane_terminal.mode_crafting": "布局：合成终端\n单击以切换到奥术工作台布局",
+  "narrator.arcane_terminal.mode": "切换布局",
+
+  "gui.arcane_terminal.vis_available.tooltip": "终端周围的灵气。奥术合成时会消耗灵气",
+  "gui.arcane_terminal.charger.tooltip": "将一个奥术工作台充能器放置存储连接器上，即可从其周围的区块中汲取灵气。",
+
+  "research.arcane_terminal.arcane_crafting_terminal.title": "奥术合成终端",
+  "research.arcane_terminal.arcane_crafting_terminal.stage_0": "在每次进行奥术合成之前都得从箱子里逐一取出每一种材料，这可真是件累人的活儿。你不禁想：要是工作台也能像那些智能的合成终端一样，直接从你的存储网络里取物该多好啊。",
+  "research.arcane_terminal.arcane_crafting_terminal.stage_1": "将世界盐洒在合成终端上，它便会变成一个奥术合成终端。它仍与你的仓库保持连接，并新增了奥术工作台的所有功能：合成方格、每个元始水晶的插槽以及一处法杖插槽。制作过程中消耗的材料会自动从存储网络中补充。<BR>终端旁的一个按钮可在奥术工作台布局与普通合成终端布局之间切换。你的水晶和法杖会原地保留，同时处于隐藏状态。<BR>奥术合成所需的灵力取自终端周围的灵气。将奥术工作台充能器放置于网络中的存储连接器之上，该网络上的所有奥术合成终端便会从连接器周边的3×3区块中汲取灵力。<BR>将其绑定一台高级无线终端，即可远程访问奥术合成台。"
+}

@@ -67,7 +67,7 @@ final class TerminalRecipeFiller {
                 continue;
             }
             int slot = cell % width + cell / width * GRID_WIDTH;
-            ItemStack taken = take(ingredient.get()::test, 1, stored);
+            ItemStack taken = take(ingredient.get(), 1, stored);
             if (!taken.isEmpty()) {
                 inventory.getItems().set(slot, taken);
             }

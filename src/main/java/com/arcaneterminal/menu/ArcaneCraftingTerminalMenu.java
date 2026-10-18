@@ -9,14 +9,8 @@ import com.leclowndu93150.thaumaturge.api.recipe.ArcaneWorkbenchContext;
 import com.leclowndu93150.thaumaturge.api.recipe.IArcaneCraftingStore;
 import com.leclowndu93150.thaumaturge.content.recipe.workbench.ArcaneCraftingInput;
 import com.leclowndu93150.thaumaturge.content.research.ResearchProgressionEvents;
-import com.leclowndu93150.thaumaturge.content.workbench.InventoryArcaneWorkbench;
-import com.leclowndu93150.thaumaturge.content.workbench.MenuArcaneWorkbench;
-import com.leclowndu93150.thaumaturge.content.workbench.SlotCrystalEssentia;
-import com.leclowndu93150.thaumaturge.content.workbench.SlotWorkbenchWand;
-import com.leclowndu93150.thaumaturge.content.workbench.WorkbenchCraftingStore;
+import com.leclowndu93150.thaumaturge.content.workbench.*;
 import com.tom.storagemod.menu.StorageTerminalMenu;
-import java.util.List;
-import java.util.Optional;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -25,11 +19,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ContainerInput;
-import net.minecraft.world.inventory.DataSlot;
-import net.minecraft.world.inventory.ResultContainer;
-import net.minecraft.world.inventory.SimpleContainerData;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -39,7 +29,12 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.neoforged.neoforge.transfer.transaction.RootCommitJournal;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Tom's storage terminal menu with the arcane workbench slots added below the item view. Crafting
@@ -56,7 +51,9 @@ public class ArcaneCraftingTerminalMenu extends StorageTerminalMenu {
     public static final int PLAYER_END = PLAYER_START + 36;
     public static final int CLEAR_GRID_BUTTON = 0;
     public static final int TOGGLE_MODE_BUTTON = 1;
-    /** Message key carrying the id of a recipe to lay out in the grid. */
+    /**
+     * Message key carrying the id of a recipe to lay out in the grid.
+     */
     public static final String FILL_RECIPE_KEY = "arcane_terminal_fill";
 
     private static final int AURA_REFRESH_INTERVAL = 10;
@@ -78,7 +75,9 @@ public class ArcaneCraftingTerminalMenu extends StorageTerminalMenu {
     private long lastAuraRefresh;
     private boolean clientArcaneMode = true;
 
-    /** Client side constructor. */
+    /**
+     * Client side constructor.
+     */
     public ArcaneCraftingTerminalMenu(int id, Inventory playerInventory) {
         super(ATRegistry.ARCANE_CRAFTING_TERMINAL_MENU.get(), id, playerInventory);
         this.inventory = new InventoryArcaneWorkbench();
@@ -88,10 +87,12 @@ public class ArcaneCraftingTerminalMenu extends StorageTerminalMenu {
         init(playerInventory);
     }
 
-    /** Server side constructor. */
-    public ArcaneCraftingTerminalMenu(int id, Inventory playerInventory, ArcaneCraftingTerminalBlockEntity terminal) {
+    /**
+     * Server side constructor.
+     */
+    public ArcaneCraftingTerminalMenu(int id, Inventory playerInventory, @Nullable ArcaneCraftingTerminalBlockEntity terminal) {
         super(ATRegistry.ARCANE_CRAFTING_TERMINAL_MENU.get(), id, playerInventory, terminal);
-        this.inventory = terminal.getInventory();
+        this.inventory = Objects.requireNonNull(terminal).getInventory();
         this.terminal = terminal;
         this.serverPlayer = playerInventory.player instanceof ServerPlayer sp ? sp : null;
         this.serverLevel = terminal.getLevel() instanceof ServerLevel sl ? sl : null;
@@ -122,7 +123,9 @@ public class ArcaneCraftingTerminalMenu extends StorageTerminalMenu {
         }
     }
 
-    /** Whether the arcane workbench layout is shown; false shows Tom's Crafting Terminal layout. */
+    /**
+     * Whether the arcane workbench layout is shown; false shows Tom's Crafting Terminal layout.
+     */
     public boolean isArcaneMode() {
         return terminal != null ? terminal.isArcaneMode() : clientArcaneMode;
     }
@@ -208,14 +211,14 @@ public class ArcaneCraftingTerminalMenu extends StorageTerminalMenu {
     }
 
     @Override
-    public void slotsChanged(Container container) {
+    public void slotsChanged(@NonNull Container container) {
         if (container == inventory) {
             refreshResult();
         }
     }
 
     private ArcaneWorkbenchContext context() {
-        return ArcaneWorkbenchContext.placed(serverPlayer, terminal.getBlockPos(), terminal.hostIdentity(), null);
+        return ArcaneWorkbenchContext.placed(Objects.requireNonNull(serverPlayer), Objects.requireNonNull(terminal).getBlockPos(), terminal.hostIdentity(), null);
     }
 
     private void refreshResult() {
@@ -236,7 +239,10 @@ public class ArcaneCraftingTerminalMenu extends StorageTerminalMenu {
         if (!arcaneResult) {
             CraftingInput craftingInput = inventory.asPositionedCraftInput().input();
             if (craftingInput.width() > 0) {
-                Optional<RecipeHolder<CraftingRecipe>> match = serverLevel.recipeAccess().getRecipeFor(RecipeType.CRAFTING, craftingInput, serverLevel);
+                Optional<RecipeHolder<CraftingRecipe>> match = Optional.empty();
+                if (serverLevel != null) {
+                    match = serverLevel.recipeAccess().getRecipeFor(RecipeType.CRAFTING, craftingInput, serverLevel);
+                }
                 if (match.isPresent()) {
                     usedRecipe = match.get();
                     output = usedRecipe.value().assemble(craftingInput);
@@ -250,7 +256,10 @@ public class ArcaneCraftingTerminalMenu extends StorageTerminalMenu {
         if (!craftsOnServer()) {
             return ItemStack.EMPTY;
         }
-        List<ItemStack> before = terminal.gridSnapshot();
+        List<ItemStack> before = null;
+        if (terminal != null) {
+            before = terminal.gridSnapshot();
+        }
         ItemStack crafted;
         try (Transaction transaction = Transaction.openRoot()) {
             crafted = craft(transaction);
@@ -261,7 +270,9 @@ public class ArcaneCraftingTerminalMenu extends StorageTerminalMenu {
         if (crafted.isEmpty()) {
             refreshResult();
         } else {
-            terminal.refillGrid(before);
+            if (terminal != null) {
+                terminal.refillGrid(before);
+            }
         }
         return crafted;
     }
@@ -293,7 +304,7 @@ public class ArcaneCraftingTerminalMenu extends StorageTerminalMenu {
         CraftingInput.Positioned positioned = inventory.asPositionedCraftInput();
         CraftingInput input = positioned.input();
         CraftingRecipe recipe = usedRecipe.value();
-        if (input.width() == 0 || !recipe.matches(input, serverLevel)) {
+        if (serverLevel != null && (input.width() == 0 || !recipe.matches(input, serverLevel))) {
             return ItemStack.EMPTY;
         }
         ItemStack output = recipe.assemble(input);
@@ -311,13 +322,18 @@ public class ArcaneCraftingTerminalMenu extends StorageTerminalMenu {
     @Override
     public void broadcastChanges() {
         if (craftsOnServer()) {
-            long time = serverLevel.getGameTime();
+            long time = 0;
+            if (serverLevel != null) {
+                time = serverLevel.getGameTime();
+            }
             if (!auraRead || time < lastAuraRefresh || time - lastAuraRefresh >= AURA_REFRESH_INTERVAL) {
-                terminal.refreshAura();
+                if (terminal != null) {
+                    terminal.refreshAura();
+                }
                 boolean first = !auraRead;
                 auraRead = true;
                 lastAuraRefresh = time;
-                if (first || terminal.auraVis != auraData.get(AURA_DATA_SLOT)) {
+                if (terminal != null && (first || terminal.auraVis != auraData.get(AURA_DATA_SLOT))) {
                     auraData.set(AURA_DATA_SLOT, terminal.auraVis);
                     refreshResult();
                 }
@@ -327,24 +343,34 @@ public class ArcaneCraftingTerminalMenu extends StorageTerminalMenu {
     }
 
     @Override
-    public void removed(Player player) {
+    public void removed(@NonNull Player player) {
         super.removed(player);
         inventory.removeChangedListener(changeListener);
     }
 
-    /** Fills the grid for a recipe the client picked in JEI; see {@link #FILL_RECIPE_KEY}. */
+    /**
+     * Fills the grid for a recipe the client picked in JEI; see {@link #FILL_RECIPE_KEY}.
+     */
     @Override
     public void receive(ValueInput message) {
         super.receive(message);
-        if (!craftsOnServer() || serverPlayer.isSpectator()) {
+        if (serverPlayer != null && (!craftsOnServer() || serverPlayer.isSpectator())) {
             return;
         }
-        message.getString(FILL_RECIPE_KEY).map(Identifier::tryParse).ifPresent(id -> serverLevel.getServer().getRecipeManager().byKey(ResourceKey.create(Registries.RECIPE, id))
-                .ifPresent(holder -> new TerminalRecipeFiller(terminal, serverPlayer).place(holder.value())));
+        message.getString(FILL_RECIPE_KEY)
+                .map(Identifier::tryParse)
+                .flatMap(id -> Objects.requireNonNull(serverLevel).getServer()
+                        .getRecipeManager()
+                        .byKey(ResourceKey.create(Registries.RECIPE, id)))
+                .ifPresent(holder -> {
+                    if (terminal != null) {
+                        new TerminalRecipeFiller(terminal, serverPlayer).place(holder.value());
+                    }
+                });
     }
 
     @Override
-    public boolean clickMenuButton(Player player, int id) {
+    public boolean clickMenuButton(@NonNull Player player, int id) {
         if (id == CLEAR_GRID_BUTTON && terminal != null) {
             terminal.clearGrid(player);
             return true;
@@ -358,12 +384,12 @@ public class ArcaneCraftingTerminalMenu extends StorageTerminalMenu {
     }
 
     @Override
-    public boolean canTakeItemForPickAll(ItemStack carried, Slot slot) {
+    public boolean canTakeItemForPickAll(@NonNull ItemStack carried, Slot slot) {
         return slot.container != result && super.canTakeItemForPickAll(carried, slot);
     }
 
     @Override
-    public void clicked(int slotIndex, int button, ContainerInput input, Player clicker) {
+    public void clicked(int slotIndex, int button, @NonNull ContainerInput input, @NonNull Player clicker) {
         if (input == ContainerInput.SWAP && slotIndex == RESULT_SLOT && craftsOnServer()) {
             swapCraft(button, clicker);
             return;
@@ -464,6 +490,7 @@ public class ArcaneCraftingTerminalMenu extends StorageTerminalMenu {
         return finishMove(clicker, slot, stack, original);
     }
 
+    @SuppressWarnings("SameReturnValue")
     private ItemStack pushGridSlot(Player clicker, Slot slot) {
         if (terminal == null) {
             return ItemStack.EMPTY;
@@ -501,7 +528,10 @@ public class ArcaneCraftingTerminalMenu extends StorageTerminalMenu {
     }
 
     private ItemStack quickCraft(Player clicker) {
-        List<ItemStack> before = terminal.gridSnapshot();
+        List<ItemStack> before = null;
+        if (terminal != null) {
+            before = terminal.gridSnapshot();
+        }
         ItemStack crafted;
         ItemStack remainder;
         try (Transaction transaction = Transaction.openRoot()) {
@@ -517,7 +547,9 @@ public class ArcaneCraftingTerminalMenu extends StorageTerminalMenu {
             refreshResult();
             return ItemStack.EMPTY;
         }
-        terminal.refillGrid(before);
+        if (terminal != null) {
+            terminal.refillGrid(before);
+        }
         resultSlot.onQuickCraft(remainder, crafted);
         if (!remainder.isEmpty()) {
             clicker.drop(remainder, false);

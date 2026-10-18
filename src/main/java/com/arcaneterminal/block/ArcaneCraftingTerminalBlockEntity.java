@@ -33,6 +33,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -70,7 +71,7 @@ public class ArcaneCraftingTerminalBlockEntity extends StorageTerminalBlockEntit
     }
 
     @Override
-    public Component getDisplayName() {
+    public @NonNull Component getDisplayName() {
         return Component.translatable("menu.arcane_terminal.arcane_crafting_terminal");
     }
 
@@ -181,6 +182,7 @@ public class ArcaneCraftingTerminalBlockEntity extends StorageTerminalBlockEntit
         } else {
             anchors.add(worldPosition);
         }
+        //noinspection deprecation
         anchors.removeIf(anchor -> !serverLevel.hasChunkAt(anchor));
         return anchors;
     }
@@ -255,7 +257,7 @@ public class ArcaneCraftingTerminalBlockEntity extends StorageTerminalBlockEntit
     }
 
     @Override
-    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+    public void preRemoveSideEffects(@NonNull BlockPos pos, @NonNull BlockState state) {
         if (level != null && !level.isClientSide()) {
             Containers.dropContents(level, pos, inventory);
         }

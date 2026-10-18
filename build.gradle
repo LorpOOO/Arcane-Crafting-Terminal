@@ -15,11 +15,6 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
 repositories {
     maven {
-        name = 'Leclown'
-        url = 'https://maven.leclowndu93150.dev/releases'
-        content { includeGroup 'com.leclowndu93150' }
-    }
-    maven {
         name = 'IllusiveSoulworks'
         url = 'https://maven.theillusivec4.top/'
         content { includeGroup 'top.theillusivec4.curios' }
@@ -40,6 +35,14 @@ repositories {
             }
         }
         filter { includeGroup 'maven.modrinth' }
+    }
+
+    maven {
+        name = 'Curse Maven'
+        url = 'https://cursemaven.com'
+        content {
+            includeGroup 'curse.maven'
+        }
     }
 }
 
@@ -73,13 +76,7 @@ neoForge {
 def localThaumaturge = fileTree(dir: 'libs', include: 'thaumaturge*.jar')
 
 dependencies {
-    if (!localThaumaturge.isEmpty()) {
-        compileOnly localThaumaturge
-        runtimeOnly localThaumaturge
-    } else {
-        compileOnly("com.leclowndu93150:thaumaturge-26.1.2-neoforge:${thaumaturge_version}") { transitive = false }
-        runtimeOnly("com.leclowndu93150:thaumaturge-26.1.2-neoforge:${thaumaturge_version}") { transitive = false }
-    }
+    implementation "curse.maven:thaumaturge-1628024:${thaumaturge_version}"
 
     implementation "maven.modrinth:toms-storage:${toms_storage_version}"
 
@@ -90,6 +87,9 @@ dependencies {
     runtimeOnly "maven.modrinth:XaDC71GB:${lithostitched_version}"
     runtimeOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}"
     runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+
+    // Jade
+    implementation "maven.modrinth:jade:${jade_version}"
 }
 
 var generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
